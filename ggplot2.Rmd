@@ -16,7 +16,23 @@ mpg
 
 ```{r}
 ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
-  geom_point()
+  geom_point(alpha = 0.4)
 ```
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = class)) + geom_point()
+```
+
+Make a scatterplot of `hwy` vs `cty` with different size points representing each `class` and different colors for each `fuel type` (fl).
+
+```{r}
+ggplot(mpg, aes(x = hwy, y = cty, size = class, color = fl)) + geom_point()
+```
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy)) + 
+  geom_point(alpha = 0.4, color = "blue")
+```
+Anthing in aes should refer to a column in your dataset.  Don't use "" within aes for variables bc creates new column.
 
 
