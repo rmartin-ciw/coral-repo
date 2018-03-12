@@ -8,6 +8,7 @@ output: html_document
 ## Learning ggplot2 ##
 ```{r}
 library(tidyverse)
+library(ggthemes)
 ```
 
 ```{r}
@@ -33,6 +34,38 @@ ggplot(mpg, aes(x = hwy, y = cty, size = class, color = fl)) + geom_point()
 ggplot(mpg, aes(x = displ, y = hwy)) + 
   geom_point(alpha = 0.4, color = "blue")
 ```
-Anthing in aes should refer to a column in your dataset.  Don't use "" within aes for variables bc creates new column.
+Anything in aes should refer to a column in your dataset.  Don't use "" within aes for variables bc creates new column.
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy, color = class)) + 
+  geom_point() +
+  facet_wrap( ~ manufacturer, scales = "free", ncol = 5) +
+  theme_tufte()
+```
+```{r}
+ggplot(mpg, aes(x = log(displ), y = hwy, color = class)) + 
+  geom_point() +
+  facet_wrap( ~ year) +
+  theme_bw()
+```
 
+```{r}
+ggplot(mpg, aes(x = drv, y = hwy)) +
+  geom_violin()
+```
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy)) +
+  geom_smooth(method = "lm") +
+  geom_point() +
+  labs(title = "Relationship between engine size and highway mileage (mpg)", 
+       x = "Engine size (liters displaced)",
+       y = "Highway mileage (miles per gallon)")
+```
+
+```{r}
+myplot <- ggplot(mpg, aes(x = fl, fill = class)) +
+  geom_bar(position = "fill")
+
+ggsave("example_plot.png", plot = myplot, width = 15, height = 15, units = "cm")
+```
 
