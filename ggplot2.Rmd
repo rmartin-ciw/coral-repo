@@ -7,6 +7,16 @@ output: html_document
 
 ## Learning ggplot2 ##
 ```{r}
-
+library(tidyverse)
 ```
+
+```{r}
+mpg
+```
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point()
+```
+
 
