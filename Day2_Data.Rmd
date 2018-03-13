@@ -6,8 +6,10 @@ output: html_document
 ---
 ```{r}
 library(tidyverse)
+library(skimr)
+library(ggplot2)
 ```
-
+Order loading libraries matters because they will mask 'override' previous. Can specify which package to use later
 ```{r}
 gapminder <- read_csv("https://raw.githubusercontent.com/jules32/2017-11-30-MBARI/gh-pages/data/gapminder.csv")
 ```
@@ -31,3 +33,35 @@ $ is a way to select column out of dataframe - will give you the choices
 unique(gapminder$continent)
 unique(gapminder[,"continent"])
 ```
+
+```{r}
+summary(gapminder)
+skim(gapminder)
+```
+```{r}
+filter()
+stats::filter
+dplyr::filter(gapminder, country == "Switzerland")
+dplyr::filter(gapminder, lifeExp < 30)
+filter(gapminder, country == "Afghanistan", year == max(year))
+```
+
+```{r}
+dplyr::select(gapminder, country, year, pop)
+dplyr::select(gapminder, -continent)
+gapminder_no_cont <- dplyr::select(gapminder, -continent)
+dplyr::filter(gapminder_no_cont, year == 2007)
+```
+Pipe %>% - take result from first and use it as data for next to get next result without making new variables.
+```{r}
+dplyr::select(gapminder, -continent) %>% 
+  filter(year == 2007)
+```
+Mutate
+```{r}
+gapminder %>%
+  mutate(gdp = gdpPercap * pop) %>%
+  arrange(desc(gdp)) %>%
+  filter(year == 2007)
+```
+Specify package you want to use i.e. dplyr::
