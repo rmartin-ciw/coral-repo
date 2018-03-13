@@ -4,6 +4,7 @@ author: "Robin"
 date: "3/13/2018"
 output: html_document
 ---
+#Setup
 ```{r}
 library(tidyverse)
 library(skimr)
@@ -45,7 +46,7 @@ dplyr::filter(gapminder, country == "Switzerland")
 dplyr::filter(gapminder, lifeExp < 30)
 filter(gapminder, country == "Afghanistan", year == max(year))
 ```
-
+Specify package you want to use i.e. dplyr::
 ```{r}
 dplyr::select(gapminder, country, year, pop)
 dplyr::select(gapminder, -continent)
@@ -64,4 +65,58 @@ gapminder %>%
   arrange(desc(gdp)) %>%
   filter(year == 2007)
 ```
-Specify package you want to use i.e. dplyr::
+
+Grouping
+```{r}
+gapminder %>%
+  group_by(country) %>%
+  mutate(gdp = gdpPercap * pop, max(gdp)) %>%
+  ungroup()
+```
+
+Group and Summarize
+```{r}
+gapminder %>%
+  group_by(country) %>%
+  mutate(gdp = pop * gdpPercap) %>%
+  summarise(max_gdp = max(gdp)) %>%
+  arrange(desc(max_gdp))
+```
+
+## Joining Datasets, left (first from pipe) + right (second from pipe)
+left_join - keep key from left table and join to right
+right_join
+inner_join - retain only rows in both sets
+outer_join - retain all values, all rows (must have by = "x1" to make sure combine)
+```{r}
+co2 <- readr::read_csv("https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/co2.csv")
+head(co2)
+summary(co2)
+skim(co2)
+```
+```{r}
+gap_2007 <- gapminder %>%
+  filter(year == 2007) 
+```
+Do checking with anti_join or setdiff
+```{r}
+left_join(gap_2007, co2, by = "country")
+right_join(gap_2007, co2, by = "country")
+```
+
+## tidyr
+```{r}
+AirPassengers
+```
+```{r}
+gap_wide <- read_csv("https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/gapminder_wide.csv")
+```
+Use Fn + F1 for help on function while you cursor is in the text of the function
+use convert = TRUE while separating to try to get correct data format for output table.
+```{r}
+gap_better <- gap_wide %>%
+  tidyr::gather(observation, observ_value, -continent, -country) %>%
+  separate(observation, into = c("obs_type", "year"), sep = "_", convert = TRUE)
+
+```
+
