@@ -120,3 +120,5 @@ gap_better <- gap_wide %>%
 
 ```
 
+#Partnering
+
