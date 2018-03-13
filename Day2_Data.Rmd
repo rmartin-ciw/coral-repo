@@ -1,0 +1,33 @@
+---
+title: "Day2Data"
+author: "Robin"
+date: "3/13/2018"
+output: html_document
+---
+```{r}
+library(tidyverse)
+```
+
+```{r}
+gapminder <- read_csv("https://raw.githubusercontent.com/jules32/2017-11-30-MBARI/gh-pages/data/gapminder.csv")
+```
+
+```{r}
+head(gapminder, 2)
+tail(gapminder, 10)
+```
+
+```{r}
+str(gapminder)
+```
+
+```{r}
+dim(gapminder)
+ncol(gapminder)
+nrow(gapminder)
+```
+$ is a way to select column out of dataframe - will give you the choices
+```{r}
+unique(gapminder$continent)
+unique(gapminder[,"continent"])
+```
