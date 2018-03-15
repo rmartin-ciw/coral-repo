@@ -18,7 +18,7 @@ library(skimr) # install.packages('skimr')
 library(stringr) # added when we needed it for benthic data
 library(ggplot2)
 library(scales)
-library(readxl)
+library(readxl) # needed to read in excel file
 
 ## data filepaths/urls ----
 
@@ -166,7 +166,7 @@ test <- as.character(test)
 test <- stringr::str_pad(test, width = 4, side = "left", pad = "0")
 ```
 
-#Fixed width in dataframe
+#Creating fixed width in dataframe
 package needed library(readxl)
 
 ```{r}
@@ -179,21 +179,44 @@ test <-  test %>%
 
 ```
 
+
 ```{r}
 cs_data <- read_excel("/Users/rmartin/github/coral-repo/Coral cleaned ASD (Updated 24Feb2018).xlsx", sheet = "Spec_Chl_PLSR_ASD")
+names(cs_data)
 
-#dplyr way
+#extract BN spectral data 
 cs_data_BN <- cs_data %>% select(contains("_BN"))
+print(cs_data_BN)
 
-cs_data_raw <- cs_data %>% 
-  select(starts_with("3"),
-         starts_with("4"),
-         starts_with("5")) %>%
- # select(??not contains("_BN"))
-  
-#indexing way
-i <- grep("*[1-9]", names(cs_data))
-names(cs_data [ ,i])
+#extract raw spectral data - must add a searchable portion of column name
+i <- which(
+      is.na(
+       as.numeric(
+        colnames(cs_data))) == F)
+
+colnames(cs_data)[i] <- paste("raw_",colnames(cs_data)[i], sep = "")
+colnames(cs_data)
+
+cs_data_raw <- cs_data %>% select(contains("raw"))
+print(cs_data_raw)
+
+
+cs_data_raw_wide <- cs_data %>% select(starts_with("raw"))
+print(cs_data_raw_wide)
+names(cs_data_raw_wide)
+
+cs_data_BN_wide <- cs_data %>% select(ends_with("_BN"))
+print(cs_data_BN_wide)
+names(cs_data_BN_wide)
+
+cs_specs_raw <- write.csv(file = "/Users/rmartin/Google Drive/Robin Mac/5. Projects/v. Ongoing Projects/Hawaii/Coral Resistance and Resilience/1. FInal Datasheets/2. Model PLSR ASD Spectra/cs_spec_raw.csv", x = cs_data_raw_wide)
+
+
+#Need to have ID for each spectrum
+cs_data_raw_long <- cs_data_raw_wide %>% 
+  gather(key = "wavelength", value = "number_raw", starts_with("raw")) %>%
+  mutate(wavelength = str_replace_all(wavelength, "raw", ""))
+print(cs_data_raw_long)
 
 
 ```
