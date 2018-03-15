@@ -1,0 +1,199 @@
+---
+title: "Index_rem"
+author: "Robin"
+date: "3/13/2018"
+output: html_document
+---
+
+
+![](https://github.com/rmartin-ciw/coral-repo/raw/master/example_plot.png)
+
+#Starting on real data
+
+```{r}
+## libraries
+library(tidyverse)
+library(janitor) # install.packages('janitor')
+library(skimr) # install.packages('skimr')
+library(stringr) # added when we needed it for benthic data
+library(ggplot2)
+library(scales)
+library(readxl)
+
+## data filepaths/urls ----
+
+## benthic data
+benthic_url <- 'https://www.nodc.noaa.gov/archive/arc0054/0104255/1.1/data/0-data/cd08/100308OaAla03m.CSV'
+
+## buoy data
+buoy_url <- 'http://www.ndbc.noaa.gov/view_text_file.php?filename=mokh1h2010.txt.gz&dir=data/historical/stdmet/'
+
+#Benthic Data
+
+benthic_raw <- read_csv(benthic_url)
+head(benthic_raw)
+```
+
+```{r}
+benthic <- benthic_raw %>%
+janitor::clean_names()
+names(benthic)
+```
+
+```{r}
+benthic <- benthic %>%
+  select(id_name, point, x, y, id_date)
+
+head(benthic)
+```
+
+To replace or remove
+mutate(date = stringr::str_remove_all(id_date, "#"))
+mutate(date = stringr::str_replace_all(id_date, "#", ""))
+```{r}
+benthic <- benthic %>%
+  mutate(date = stringr::str_replace_all(id_date, "#", ""))
+
+head(benthic)
+```
+
+```{r}
+unique(benthic$id_name)
+
+```
+
+```{r}
+ggplot(benthic, aes(x = date, fill = id_name)) +
+  geom_bar()
+
+```
+
+Read in data
+# Buoy Data
+```{r}
+buoy_raw <- read_table2(buoy_url)
+head(buoy_raw)
+```
+
+```{r}
+buoy <- buoy_raw
+## 1. overwrite column names
+names(buoy) <- str_c(names(buoy),                  ## current header
+                  buoy %>% filter(`#YY` == "#yr"), ## row1 -- don't say buoy[1,] 
+                  sep = "_")                       ## separate by `_`
+
+## inspect
+names(buoy) ## Looks a lot better
+```
+
+```{r}
+## 2. clean up a bit more to get rid of the `#`s and the `/`s. 
+names(buoy) <- str_replace_all(names(buoy), "#", "")  # replace `#` with nothing 
+names(buoy) <- str_replace_all(names(buoy), "/", "_") # replace `/` with `_`
+
+## inspect to make sure it worked
+names(buoy)
+```
+
+```{r}
+## 3. remove redundant row with units
+buoy <- buoy %>%
+  filter(YY_yr != "#yr") ## picks out every row you want except the one you don't want
+
+head(buoy)
+```
+
+Plot to visualize data
+```{r}
+ggplot2::ggplot(buoy, aes(WTMP_degC)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+```{r}
+buoy <- buoy %>%
+  unite(date, c(YY_yr, MM_mo, DD_dy), sep = "-")
+
+head(buoy)
+```
+
+```{r}
+bb_join <- left_join(benthic, buoy, by = "date")
+bb_join %>%
+  select(id_name, x, y, date, hh_hr, mm_mn, WTMP_degC) %>%
+  head()
+
+```
+cleaning and setting numeric
+```{r}
+buoy <- buoy %>%
+  dplyr::mutate(temp_clean = gsub("999.0", NA, WTMP_degC)) %>%
+  dplyr::mutate(temp_clean = as.numeric(temp_clean))
+
+```
+
+```{r}
+bb_day <- buoy %>%
+  dplyr::group_by(date) %>%
+  ## dplyr::summarise(WTMPavg_degC = mean(temp_clean, na.rm=T), obs = length(which(is.na(temp_clean) == F))) %>%
+  ##dplyr::summarise(WTMPavg_degC = mean(temp_clean, na.rm=T), obs = skimr::n_complete(temp_clean)) %>%
+  
+## Trying this without having to rejoin that is written below
+  dplyr::mutate(WTMPavg_degC = mean(temp_clean, na.rm=T), obs = skimr::n_complete(temp_clean)) %>%
+  filter(obs >= 100) %>%
+  ungroup() %>%
+  mutate(date = as.Date(date))
+  
+```
+
+```{r, eval = FALSE}
+buoy_daymeanT <- left_join(buoy, bb_day, by = "date") %>%
+  mutate(date = as.Date(date))
+```
+
+```{r}
+ggplot(bb_day, aes(x = date, y = WTMPavg_degC)) +
+  geom_point(mapping = aes(x = date, y = temp_clean), color = "red", size = 0.2) +
+  geom_point(mapping = aes(x = date, y = WTMPavg_degC)) +
+  scale_x_date(breaks = date_breaks("months"), labels = date_format("%b-%y"))
+```
+
+#Fixed width in a column
+```{r}
+test <- c(1, 10, 100, 1000)
+test <- as.character(test)
+##pad is how you specify what you are adding
+test <- stringr::str_pad(test, width = 4, side = "left", pad = "0")
+```
+
+#Fixed width in dataframe
+package needed library(readxl)
+
+```{r}
+test <- data.frame(id = c(1, 10, 100, 1000), 
+                   patch = c("04", "04", "01", "HIMB"))
+test <-  test %>%
+  mutate(id_char = as.character(id)) %>%
+  mutate(id_char = stringr::str_pad(id_char, width = 4, side = "left", pad = "0")) %>%
+  unite(colony, patch, id_char, sep = "-", remove = FALSE) 
+
+```
+
+```{r}
+cs_data <- read_excel("/Users/rmartin/github/coral-repo/Coral cleaned ASD (Updated 24Feb2018).xlsx", sheet = "Spec_Chl_PLSR_ASD")
+
+#dplyr way
+cs_data_BN <- cs_data %>% select(contains("_BN"))
+
+cs_data_raw <- cs_data %>% 
+  select(starts_with("3"),
+         starts_with("4"),
+         starts_with("5")) %>%
+ # select(??not contains("_BN"))
+  
+#indexing way
+i <- grep("*[1-9]", names(cs_data))
+names(cs_data [ ,i])
+
+
+```
