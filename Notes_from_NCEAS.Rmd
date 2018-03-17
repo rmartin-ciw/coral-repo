@@ -1,0 +1,22 @@
+---
+title: "Notes_from_NCEAS"
+author: "Robin"
+date: "3/16/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Where to find workshop materials
+
+http://ohi-science.org/data-science-training/dplyr.html#mutate-adds-new-variables
+
+https://rmarkdown.rstudio.com/
+
+https://nceas.github.io/crescynt-training/tidy_coral
+
+https://github.com/NCEAS/crescynt-training
+
+https://www.rstudio.com/resources/cheatsheets/

@@ -1,0 +1,83 @@
+---
+title: "Coral_chem_spec_work"
+author: "Robin"
+date: "3/15/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Coral Chemical Spectral Data
+```{r}
+cs_data <- read_excel("/Users/rmartin/github/coral-repo/Coral cleaned ASD (Updated 24Feb2018).xlsx", sheet = "Spec_Chl_PLSR_ASD")
+names(cs_data)
+```
+
+
+#Fixed width in a column
+```{r}
+test <- c(1, 10, 100, 1000)
+test <- as.character(test)
+##pad is how you specify what you are adding
+test <- stringr::str_pad(test, width = 4, side = "left", pad = "0")
+```
+
+#Creating fixed width in dataframe
+package needed library(readxl)
+
+```{r}
+test <- data.frame(id = c(1, 10, 100, 1000), 
+                   patch = c("04", "04", "01", "HIMB"))
+test <-  test %>%
+  mutate(id_char = as.character(id)) %>%
+  mutate(id_char = stringr::str_pad(id_char, width = 4, side = "left", pad = "0")) %>%
+  unite(colony, patch, id_char, sep = "-", remove = FALSE) 
+
+```
+
+#Add a searchable portion of column name
+```{r}
+
+i <- which(
+      is.na(
+       as.numeric(
+        colnames(cs_data))) == F)
+
+colnames(cs_data)[i] <- paste("raw_",colnames(cs_data)[i], sep = "")
+colnames(cs_data)
+```
+
+#extract only spectral data
+```{r}
+cs_data_raw <- cs_data %>% select(contains("raw"))
+print(cs_data_raw)
+
+cs_data_raw_wide <- cs_data %>% select(starts_with("raw"))
+print(cs_data_raw_wide)
+names(cs_data_raw_wide)
+
+cs_data_BN_wide <- cs_data %>% select(ends_with("_BN"))
+print(cs_data_BN_wide)
+names(cs_data_BN_wide)
+
+cs_data_BN <- cs_data %>% select(contains("_BN"))
+print(cs_data_BN)
+names(cs_data_BN)
+```
+
+#Write output to csv file
+```{r}
+cs_specs_raw <- write.csv(file = "/Users/rmartin/Google Drive/Robin Mac/5. Projects/v. Ongoing Projects/Hawaii/Coral Resistance and Resilience/1. FInal Datasheets/2. Model PLSR ASD Spectra/cs_spec_raw.csv", x = cs_data_raw_wide)
+```
+
+#Create long version of spectra for plotting
+ - Need to have ID for each spectrum
+ - And need the wavelength
+```{r}
+cs_data_raw_long <- cs_data_raw_wide %>% 
+  gather(key = "wavelength", value = "number_raw", starts_with("raw")) %>%
+  mutate(wavelength = str_replace_all(wavelength, "raw", ""))
+print(cs_data_raw_long)
+```
